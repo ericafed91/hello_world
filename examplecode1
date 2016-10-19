@@ -1,0 +1,362 @@
+'''PERSON.INFO
+ Created By    : me
+ Created On    : today
+
+'''
+
+DEFINE
+  TRUE            = 1
+  FALSE           = 0
+  QUOTE           = CHARACTER(1)
+  TEMPCHAR        = CHARACTER
+  TEMPLINE        = CHARACTER
+  TEMPNUM         = NUMBER
+  FILEERROR       = CHARACTER
+  FILENUMBER      = NUMBER
+  PARSEARRAY      = CHARACTER     ARRAY(999)
+  PARSEARRAYMAX   = NUMBER
+  IDLENGTH        = NUMBER
+  STATES          = CHARACTER(05) ARRAY(06)
+  CREATEMODIFY    = CHARACTER(1)
+ NAMEAORB=NUMBER
+ TRACKAORB=NUMBER
+ TRACKTYPE=NUMBER
+ NLOCATOR=NUMBER
+  EXCEPTIONIND=NUMBER
+  STATUSIND=NUMBER
+  I               = NUMBER
+  X               = NUMBER
+  Y               = NUMBER
+END
+
+SETUP
+  CALL INIT
+  CALL DISPLAYHTML
+  CALL PARSEHTML
+  CALL FMTRACKING
+END
+
+PRINT TITLE="CONFIG"
+  SUPPRESSLINE
+END
+
+PROCEDURE DISPLAYHTML
+#This Procedure will display the HTML input screen
+
+  HTMLVIEWOPEN(0)
+
+  HTMLVIEWLINE("<head><title>EXAMPLE</title>")
+  HTMLVIEWLINE("<script language='JavaScript'><!--")
+
+  HTMLVIEWLINE("  function initialize(action){")
+  HTMLVIEWLINE("    objArr=document.body.getElementsByTagName('a');")
+  HTMLVIEWLINE("    for (i=0;i<objArr.length;i++){")
+  HTMLVIEWLINE("      objArr[i].attachEvent('onfocus',blurLinks);")
+  HTMLVIEWLINE("      objArr[i].href='javascript:void(0);';")
+  HTMLVIEWLINE("      objArr[i].tabIndex='-1'; //all anchors at top of page")
+  HTMLVIEWLINE("    }")
+  HTMLVIEWLINE("    objArr=document.body.getElementsByTagName('input');")
+  HTMLVIEWLINE("    for (i=0;i<objArr.length;i++){")
+  HTMLVIEWLINE("      objArr[i].attachEvent('onkeypress',catchEnter);")
+  HTMLVIEWLINE("      objArr[i].attachEvent('onfocus',changeColor);")
+  HTMLVIEWLINE("      objArr[i].attachEvent('onblur',changeColor);")
+  HTMLVIEWLINE("    }")
+  HTMLVIEWLINE("    objArr=document.body.getElementsByTagName('select');")
+
+  HTMLVIEWLINE("  }")
+
+  HTMLVIEWLINE("  function changeColor(){")
+  HTMLVIEWLINE("    field=event.srcElement;")
+  HTMLVIEWLINE("    if (field.type=='text' || field.type=='password')")
+  HTMLVIEWLINE("      field.style.backgroundColor="+
+                      "(event.type=='blur')?'':'lightyellow';")
+  HTMLVIEWLINE("  }")
+
+  HTMLVIEWLINE("  function blurLinks(){")
+  HTMLVIEWLINE("    event.srcElement.blur();")
+  HTMLVIEWLINE("  }")
+
+  HTMLVIEWLINE("  function catchEnter(){")
+  HTMLVIEWLINE("    field=event.srcElement;")
+  HTMLVIEWLINE("    keyCode=event.keyCode;")
+
+  HTMLVIEWLINE("    if (keyCode==13 &&")
+  HTMLVIEWLINE("        event.srcElement.type!='submit' &&")
+  HTMLVIEWLINE("        event.srcElement.type!='reset'){")
+  HTMLVIEWLINE("      for (i=0; i<field.form.elements.length; i++){")
+  HTMLVIEWLINE("        if (field==field.form.elements[i])")
+  HTMLVIEWLINE("          break;")
+  HTMLVIEWLINE("      }")
+  HTMLVIEWLINE("      i=(i+1)%field.form.elements.length;")
+  HTMLVIEWLINE("      j=i")
+  HTMLVIEWLINE("      //search for next available open control")
+  HTMLVIEWLINE("      while ((field.form.elements[j].disabled ||")
+  HTMLVIEWLINE("            field.form.elements[j].style.display=="+
+                           "'none' ||")
+  HTMLVIEWLINE("            field.form.elements[j].parentElement."+
+                            "style.display=='none' ||")
+  HTMLVIEWLINE("            field.form.elements[j].parentElement.")
+  HTMLVIEWLINE("                                   parentElement."+
+                            "style.display=='none' ||")
+  HTMLVIEWLINE("            field.form.elements[j].parentElement."+
+                            "parentElement.")
+  HTMLVIEWLINE("                                   parentElement."+
+                            "style.display=='none' ||")
+  HTMLVIEWLINE("            field.form.elements[j].parentElement."+
+                            "parentElement.")
+  HTMLVIEWLINE("                                   parentElement."+
+                            "parentElement.style.display=='none' ||")
+  HTMLVIEWLINE("            field.form.elements[j].parentElement."+
+                            "parentElement.")
+  HTMLVIEWLINE("                                   parentElement."+
+                            "parentElement.parentElement.")
+  HTMLVIEWLINE("                                   parentElement."+
+                            "style.display=='none' ||")
+  HTMLVIEWLINE("            field.form.elements[j].type=='hidden')&&")
+  HTMLVIEWLINE("            j<field.form.elements.length){")
+  HTMLVIEWLINE("        j=j+1;")
+  HTMLVIEWLINE("      }")
+  HTMLVIEWLINE("      field.form.elements[j].focus();")
+  HTMLVIEWLINE("      return false;")
+  HTMLVIEWLINE("    }")
+  HTMLVIEWLINE("    else")
+  HTMLVIEWLINE("      return true;")
+  HTMLVIEWLINE("  }")
+
+  HTMLVIEWLINE("  function verify(){")
+  HTMLVIEWLINE("    if(confirm('Are you sure you want to reset the "+
+               "form?')){")
+  HTMLVIEWLINE("      //reset form")
+  HTMLVIEWLINE("      document.forms.EXAMPLE.reset();")
+  HTMLVIEWLINE("      return true;")
+  HTMLVIEWLINE("    }else")
+  HTMLVIEWLINE("      return false;")
+  HTMLVIEWLINE("  }")
+
+  HTMLVIEWLINE("  function toggleEnable(objName){")
+  HTMLVIEWLINE("    ")
+  HTMLVIEWLINE("       if(objName.id == 'bRadio')")
+  HTMLVIEWLINE("        {")
+  HTMLVIEWLINE("            document.getElementById('aNames')."+
+                           "disabled = true;")
+  HTMLVIEWLINE("            document.getElementById('bNames')."+
+                           "disabled = false;")
+  HTMLVIEWLINE("        }")
+  HTMLVIEWLINE("        else if(objName.id == 'aRadio')")
+  HTMLVIEWLINE("        {")
+  HTMLVIEWLINE("            document.getElementById('bNames')."+
+                           "disabled = true;")
+  HTMLVIEWLINE("            document.getElementById('aNames')."+
+                           "disabled = false;")
+  HTMLVIEWLINE("        }")
+  HTMLVIEWLINE("    document.getElementById('aNames').style.backgroundColor="+
+                                  "(document.getElementById('aNames').disabled)?'#D5D0C8':'';")
+  HTMLVIEWLINE("    document.getElementById('bNames').style.backgroundColor="+
+                                  "(document.getElementById('bNames').disabled)?'#D5D0C8':'';")
+  HTMLVIEWLINE("  }")
+
+  HTMLVIEWLINE("  function processSubmit(formObj){")
+  HTMLVIEWLINE("    if (validate(formObj)){")
+  HTMLVIEWLINE("      //copy id prop to name prop for file parsing")
+  HTMLVIEWLINE("      for (i=0;i<formObj.elements.length;i++){")
+  HTMLVIEWLINE("        formObj.elements[i].name=formObj.elements[i].id;")
+  HTMLVIEWLINE("      }")
+  HTMLVIEWLINE("      //stores section states")
+  HTMLVIEWLINE("      stateObj=document.getElementById('configStates');")
+  HTMLVIEWLINE("    }else")
+  HTMLVIEWLINE("      return false;")
+  HTMLVIEWLINE("  }")
+
+  HTMLVIEWLINE("  function validate(formObj){")
+  HTMLVIEWLINE("    //id & type ranges")
+  HTMLVIEWLINE("    pattern=/^\d{4}((,|\-)\d{4})*$/;")
+  HTMLVIEWLINE("    return true;")
+  HTMLVIEWLINE("  }")
+
+  HTMLVIEWLINE("//--></script><style type='text/CSS'><!--")
+  HTMLVIEWLINE("  body,td   {font: 9pt Verdana;}")
+  HTMLVIEWLINE("  select,")
+  HTMLVIEWLINE("  textarea,")
+  HTMLVIEWLINE("  input     {font: 10pt Courier New;}")
+  HTMLVIEWLINE("  span      {float:left;cursor:hand}")
+  HTMLVIEWLINE("  .btn      {font: 10pt Arial}")
+  HTMLVIEWLINE("  .lbl      {text-align:left;height:15}")
+  HTMLVIEWLINE("  .hdg      {background-color:#B1B3CB; "+
+                            "font-weight:bold; text-align:right;}")
+  HTMLVIEWLINE("  .grp      {background-color:#DDDDDD;}")
+  HTMLVIEWLINE("  .ttl      {background-color:#BBBBBB;}")
+  HTMLVIEWLINE("  a:link    {color:#000000; text-decoration:none;}")
+  HTMLVIEWLINE("  a:visited {color:#000000; text-decoration:none;}")
+  HTMLVIEWLINE("  a:active  {color:#FF0000; text-decoration:none;}")
+  HTMLVIEWLINE("  a:hover   {color:#FF0000; text-decoration:none; "+
+                            "cursor:help;}")
+  HTMLVIEWLINE("  .plsMin           {font: 10pt Courier New; "+
+                            "font-weight:bold; text-decoration:none;}")
+  HTMLVIEWLINE("  .plsMin a:link    {color:#000000;}")
+  HTMLVIEWLINE("  .plsMin a:visited {color:#000000;}")
+  HTMLVIEWLINE("  .plsMin a:active  {color:#666666;}")
+  HTMLVIEWLINE("  .plsMin a:hover   {color:#666666; "+
+                                    "text-decoration:none; cursor:hand;}")
+  HTMLVIEWLINE("  .arrows   {font-size:24pt;position:relative;top:-8}")
+  HTMLVIEWLINE("  .disc     {color:#FF0000; font-size:8pt;}")
+  HTMLVIEWLINE("--></style></head><body onLoad='initialize();'>")
+
+  HTMLVIEWLINE("<form id='EXAMPLE' onSubmit='return processSubmit(this);' "+
+               "method='post' action='symitar://HTMLView~Action=Post'>")
+  HTMLVIEWLINE("<table width='900' cellpadding='5' "+
+               "cellspacing='0' align='center'><tr>")
+  HTMLVIEWLINE("<td class='lbl' style='font-weight:bold;'>")
+  HTMLVIEWLINE("<table width='100%' cellspacing='0' "+
+               "cellpadding='0' bgcolor='#000000'>")
+  HTMLVIEWLINE("<tr><td><table width='100%' cellpadding='4' cellspacing='0'>")
+  HTMLVIEWLINE("<tr>")
+  HTMLVIEWLINE("<td class='grp'><table width='100%' cellspacing='0'"+
+               " cellpadding='4'>")
+  HTMLVIEWLINE("<tr><td colspan='2' style='font-size:16;'><b>Name Info "+
+               "</b></td></tr>")
+  HTMLVIEWLINE("<tr><td class='lbl'>")
+  HTMLVIEWLINE("Create:")
+  HTMLVIEWLINE("<input name='createmodify' type='radio' id='create' ")
+
+  HTMLVIEWLINE("/>")
+  HTMLVIEWLINE("Modify:")
+  HTMLVIEWLINE("<input name='createmodify' type='radio' id='modify'/>")
+  HTMLVIEWLINE("</td><td class='lbl'>Create/modify record ")
+  HTMLVIEWLINE("under:<br> A:")
+  HTMLVIEWLINE("<input name='createmodify' type='radio' "+
+               "onClick='toggleEnable(this)' id='aRadio' />")
+  HTMLVIEWLINE(" B:")
+  HTMLVIEWLINE("<input name='createmodify' type='radio' onClick='toggleEnable(this)' id='bRadio'/>")
+  HTMLVIEWLINE("</td></tr><tr><td></td><td class='lbl'>A Name Selection:")
+  HTMLVIEWLINE("<select name='aNames'>")
+  FOR EACH NAME
+   DO
+    HTMLVIEWLINE("<option value='"+FORMAT("9999",ID)+"'>"+
+                 NAME+"</option>")
+   END
+  HTMLVIEWLINE("</select></td></tr>")
+  HTMLVIEWLINE("<tr><td></td><td class='lbl'>B Name Selection:"+
+               "<select name='bNames'>")
+  FOR B:
+   FOR B NAME:
+      HTMLVIEWLINE("<option value='"+NAME.ID+"'>"+
+                   NAME+"</option>")
+  HTMLVIEWLINE("</select></td></tr>")
+
+
+  HTMLVIEWLINE("<tr><td class='lbl' colspan='2'><table><tr><td class='lbl'>")
+  HTMLVIEWLINE("Form on File")
+  HTMLVIEWLINE("</td><td class='lbl'>Status</td><td>Status Code")
+  HTMLVIEWLINE("</td><td class='lbl'>Another Code</td>")
+  HTMLVIEWLINE("</tr><tr><td class='lbl'><input id='a' type='checkbox'")
+
+  HTMLVIEWLINE("/></td><td class='lbl'><input id='a names' ")
+  HTMLVIEWLINE("type='text' maxlength='40' /></td>")
+  HTMLVIEWLINE("<td><input id='status' ")
+  HTMLVIEWLINE("type='text' maxlength='4' />")
+  HTMLVIEWLINE("</td><td><input id='exempt' ")
+  HTMLVIEWLINE("type='text' maxlength='4' /></td></tr>")
+  HTMLVIEWLINE("<tr><td colspan='4'>something else")
+  HTMLVIEWLINE(" Indicator</td></tr><tr><td colspan='4'>")
+  HTMLVIEWLINE("<select id='somethingelse'>")
+  FOR X[0 TO 6]:
+   HTMLVIEWLINE("<option value='recal"+FORMAT("9",X)+"'>"+
+                 RECALCINDDESC(X)+"</option>")
+  HTMLVIEWLINE("</select></td>")
+  HTMLVIEWLINE("</tr>")
+
+  FOR X[0 TO 6]
+   DO
+    HTMLVIEWLINE("<tr><td colspan='4'>some stuff</td></tr>")
+    HTMLVIEWLINE("<tr><td colspan='4'><select id='stuff'>")
+    FOR Y[0 TO 7]
+     DO
+      HTMLVIEWLINE("<option value='stuffvalue"+FORMAT("9",X)+"'>"+
+                   FOREIGNINDICIA[Y]+"</option>")
+     END
+    HTMLVIEWLINE("</select></td></tr>")
+   END
+  HTMLVIEWLINE("<tr><td></td><td><input type='submit' class='btn' "+
+               "value=' Submit ' />")
+  HTMLVIEWLINE("<input type='reset' class='btn' value=' Reset ' "+
+               "onClick='return verify();' /></td></tr>")
+  HTMLVIEWLINE("</table></td></tr></table></td></tr>")
+
+
+  HTMLVIEWLINE("</table></td></tr></table></td></tr>")
+  HTMLVIEWLINE("<input type='hidden' id='configStates' value='' />")
+  HTMLVIEWLINE("<tr><td colspan='2' align='right'><br>"+
+               "</td></tr></table></form></body>")
+
+  HTMLVIEWDISPLAY
+END
+
+PROCEDURE INIT
+[This procedure will setup all information needed to run .CONFIG screen
+]
+  IDLENGTH=4 [Always use 4 for config purposes]
+  QUOTE=CONTRLCHAR(34)
+END
+
+PROCEDURE PARSEHTML
+[This procedure will parse out the inputted data from the form
+]
+  CALL CLEARVARIABLES
+  I=0
+  PARSEARRAYMAX=0
+  WHILE PARSEARRAY(I)<>"ENDOFDATA" AND I<999
+   DO
+    I=I+1
+    PARSEARRAY(I)=ENTERLINE[0]
+   END
+  PARSEARRAYMAX=I [-1]
+
+  FOR I[0 TO PARSEARRAYMAX]
+   DO
+    IF CHARACTERSEARCH(PARSEARRAY(I),"=")>0 THEN
+     DO
+      TEMPCHAR=UPPERCASE(SEGMENT(PARSEARRAY(I),1,
+               CHARACTERSEARCH(PARSEARRAY(I),"=")-1))
+      TEMPLINE=SEGMENT(PARSEARRAY(I),
+               CHARACTERSEARCH(PARSEARRAY(I),"=")+1,
+               LENGTH(PARSEARRAY(I)))
+print "tempchar "+tempchar 
+
+print "templine "+templine
+      IF TEMPCHAR="CREATEMODIFY" THEN
+        CREATEMODIFY="Y"
+
+'''
+      IF TEMPCHAR="DATES" THEN
+        OTHERDATES="A"
+      IF TEMPCHAR="MONTHS" AND CLUBS<>"" THEN
+        CLUBS=TEMPLINE+"/"
+      IF TEMPCHAR="DAYS" THEN
+        MATDATEALLCLUBS=MATDATEALLCLUBS+TEMPLINE
+        IF CHARACTERSEARCH(TEMPCHAR,"TYPES.")>0 THEN
+         DO
+          TEMPNUM=SLICE(TEMPCHAR,
+                  STRSEARCH(TEMPCHAR,"TYPES."),
+                  LEN(TEMPCHAR))
+          IF TEMPNUM>0 AND TEMPNUM<=499 AND TEMPLINE<>"" THEN
+            SOMETHINGDATE(TEMPNUM)=TEMPLINE+":"
+         END
+
+      IF TEMPCHAR="APPID" THEN
+        APPLICATIONID=TEMPLINE
+      IF TEMPCHAR="APPTYPE" THEN
+        APPLICATIONTYPE=TEMPLINE
+'''
+     END
+   END
+END
+
+PROCEDURE CLEARVARIABLES
+'''
+  LCLUBS=""
+'''
+END
+
+PROCEDURE PRINTING
+PRINT THINGS
+END
