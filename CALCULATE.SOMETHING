@@ -1,0 +1,332 @@
+'''
+ Created By   : ME
+
+'''
+
+targetsomerecord
+
+variables
+{
+ REPORTCHANNEL          = 0
+ NUMERICACCT            = 0
+ ERRORTEXTIGNORE        = ""
+ EXCEPTIONCOUNT         = 0
+ CLOSED           = 0
+}
+
+def initialsetup:
+ somerate=input("Default is 12.34%",
+                "some Percent")
+ IF THRESHOLDAPR=0.000% ||
+   THRESHOLDAPR=36.000%:
+     DATE=input("",
+                  "Default is TODAY")
+ IF DATE='--/--/--':
+    DATE=todaysdate
+
+ CLOSED=FALSE
+ IF input("Include records"):
+  CLOSED=TRUE
+
+ INVALIDSTMT=FALSE
+ LISTINPUT=input("Enter ALL or list",
+                 "List Example: 1-4,5,11-15",
+                 "Default: ALL")
+ IF LISTINPUT="":
+  LISTINPUT="ALL"
+ ELIF LISTINPUT<>"ALL" and
+         LISTINPUT<>"NONE":
+ {
+   FOR X=1 TO len(LISTINPUT)
+   {
+     IF isaplpha(LISTINPUT):
+      INVALIDSTMT=TRUE
+   }
+ }
+ IF INVALIDSTMT=TRUE:
+ {
+     ERRORTEXT="Invalid format."
+     ABORT[]
+ }
+ MAXINDEX=99
+ EXPAND[]
+ FOR [X=0 TO MAXINDEX]
+ {
+   STATEMENTGROUPS(X)=LIST(X)
+ }
+
+ ERRORTEXT=""
+ TRACK=INPUT("SOME Record")
+  PROMPTCODEVALIDATION[]
+ IF ERRORTEXT<>"":
+    ABORT[]
+
+ INSKEYWORD=input("Default is Comment word")
+ IF LENGTH(INSKEYWORD)>10:
+ {
+   ERRORTEXT="Comment word cannot exceed 10 "+
+             "characters."
+   ABORT[]
+ }
+ IF INSKEYWORD="":
+  INSKEYWORD="somethingfromsomehing"
+ ELSE:
+  PROMPTWORDVALIDATION[]
+ IF ERRORTEXT<>"":
+  ABORT[]
+
+ OPENEXCEPTIONS[]
+ IF ERRORTEXT<>"":
+ {
+   ERRORTEXT="Error opening Exceptions report."
+   ABORT[]
+ }
+
+openotherreport[]
+ IF ERRORTEXT<>"":
+ {
+   ERRORTEXT="Error opening other report."
+   ABORT[]
+ }
+
+ GETLIST[]
+ SETDESCRIPTION[]
+Endofprocedure
+
+TITLE="Threshold"
+PRINT title
+      REPORTCATEGORY="other"
+
+ CALCULATE[]
+ PROCESSERROR[]
+ IF ERRORTEXT="":
+ {
+   INIT[]
+   BOOLEAN1=TRUE
+   BOOLEAN2=TRUE
+   BOOLEAN3=TRUE
+
+   GETTYPES[]
+   GETSOMETHINGELSE[]
+   PROCESSERROR[]
+ }
+ IF ERRORTEXT="":
+ {
+   CALCULATEABALANCE[]
+   CALULATESOMETHINGELSE[]
+   PROCESSERROR[]
+ }
+ IF ERRORTEXT="":
+ {
+   CALCULATETOTAL[]
+   CALCULATERATE[]
+   IF SOMERATE>THRESHOLD:
+        CALCRATE[]
+ }
+
+ IF ERRORTEXT="":
+ {
+   IF SOMERATE>THRESHOLD:
+    PRINTGOESOVER[]
+   ELSE:
+    PRINTWITHINRPT[]
+ }
+Endofprocedure
+
+def PRINTEXCEEDDETAIL:
+# PRINTS DETAIL 
+# 
+ CHANNEL=CHANNELDEFAULT
+ NUMOFTHINGS=NUMOFTHINGS+1
+ IF NUMOFTHINGS=1:
+   HEADER[]
+ PRINTTHINGS[]
+Endofprocedure
+
+def PRINTWITHINDETAIL:
+# PRINTS DETAIL TO LOANS THAT ARE WITHIN THE THRESHOLD
+# 
+ REPORTCHANNEL=WITHINOUTPUTCHANNEL
+ NUMOFACCOUNTSWITHIN=NUMOFACCOUNTSWITHIN+1
+ IF NUMOFACCOUNTSWITHIN=1:
+  CALL REPORTHEADER
+ CALL PRINTDETAIL
+END
+
+def PRINTDETAIL
+# PRINTS OUT DETAIL FOR REPORTS
+#
+ INCOLUMN print001 NUMBER
+ INCOLUMN print012 NAME
+ INCOLUMN print034 category
+ INCOLUMN print041 group
+ IF BOOLEAN1=FALSE:
+  INCOLUMN print050 RATE
+ ELSE:
+  INCOLUMN print050 "******%"
+ INCOLUMN print062 BALANCE
+ INCOLUMN print069 DAYS
+ INCOLUMN print083 SOMERATE
+ INCOLUMN print093 TOTAL
+ IF CHANNEL=DEFAULT:
+  INCOLUMN print117 MAX
+ print carriagereturn
+ IF VALIDCOUNT>0:
+ {
+   FOR X=1 TO VALIDCOUNT
+   {
+     PRINT "     Fee: "
+     IF VALIDFEE(X)<$0.00:
+      INCOLUMN print027 PRINT "-"+ VALIDFEE(X)
+     ELSE:
+      INCOLUMN print026 PRINT "+"+ VALIDFEE(X)
+     INCOLUMN print029 VALIDDATE(X)
+     PRINT "  Type "
+     PRINT VALIDTYPE(X)
+     PRINT " "+FEEDESCRIPTION(VALIDTYPE(X))
+     IF VALIDSOMETHING(X)=TRUE:
+      PRINT "  do this"
+     print carriagereturn
+   }
+ }
+ IF COUNT>0:
+ {
+   FOR X=1 TO COUNT
+   {
+     PRINT "    DATA: "
+     IF D(X)<$0.00:
+      INCOLUMN print027 "-" + D
+     ELSE:
+      INCOLUMN print026 "+: + D
+     INCOLUMN print029 LEFT INSDATE(X)
+     PRINT " "+DESC(X)
+     print carriagereturn
+   }
+ }
+ IF WARNING(1)<>"":
+ {
+   PRINT "     WARNING: "
+   PRINT WARNING(1)
+   print carriagereturn
+   PRINT WARNING(2)
+   print carriagereturn
+ }
+endofprocedure
+
+def PRINTEXCEEDTOTAL:
+# PRINTS TOTAL EXCEEDING THRESHOLD
+#
+ IF NUMOVER=0:
+ {
+   CHANNEL=ODEFAULT
+   HEADER[]
+ } 
+ print carriagereturn
+ print carriagereturn
+ PRINT "Totals: "
+ PRINT NUMOVER
+ print carriagereturn
+ print carriagereturn
+ PRINT SUBTOTALLINE(EXCEED,1)
+ print carriagereturn
+ PRINT SUBTOTALLINE(EXCEED,2)
+ print carriagereturn
+ print carriagereturn
+Endofprocedure
+
+def PRINTWITHINTOTAL:
+# PRINTS TOTAL WITHIN THRESHOLD
+#
+ switch[]
+ IF NUMWITHIN=0:
+ {
+   CHANNEL=WITHIN
+   HEADER[]
+ }
+ PRINT REPEATCHR("-",130)
+ print carriagereturn
+ print carriagereturn
+ PRINT "Total: "
+ PRINT NUMWITHIN
+ print carriagereturn
+ print carriagereturn
+ PRINT SUBTOTALLINE(WITHIN,1)
+ print carriagereturn
+END
+
+def PRINTEXCEPTIONTOTAL:
+# PRINTS TOTALs WITH EXCEPTIONS
+#
+ switch[]
+ IF EXCEPTIONCOUNT=0:
+      EXCEPTIONHEADER[]
+ hardrule
+ print carriagereturn
+ print carriagereturn
+ PRINT "Total Exceptions: "
+ PRINT EXCEPTIONCOUNT
+ print carriagereturn
+END
+
+def HEADER:
+# PRINTS HEADER
+#
+ def printheaders:
+  INCOLUMN print031 "This"
+  INCOLUMN print038 "that"
+  INCOLUMN print054 "some amount"
+  print carriagereturn
+  INCOLUMN print001 " #"
+  INCOLUMN print012 "Name"
+  INCOLUMN print031 " Cat"
+  INCOLUMN print037 "Group"
+  INCOLUMN print046 "Rate"
+  INCOLUMN print056 "Money"
+  INCOLUMN print066 "Duration"
+  INCOLUMN print076 "Something"
+  INCOLUMN print090 "Other Money"
+  INCOLUMN print098 "Something else"
+  IF CHANNEL=DEFAULT:
+   INCOLUMN print110 "Max"
+  print hardrule
+  print carriagereturn
+}
+endofprocedure
+
+def EXCEPTIONHEADER:
+# PRINTS EXCEPTION HEADER
+#
+ HEADERS
+  INCOLUMN print031 "This"
+  print carriagereturn
+  INCOLUMN print001 "That #"
+  INCOLUMN print012 "Name"
+  INCOLUMN print031 " Cat"
+  INCOLUMN print036 "Exception"
+  print carriagereturn
+}
+endofprocedure
+
+def ABORT:
+# PRINTS ERROR AND ABORT
+#
+ PRINT ERRORTEXT
+ print carriagereturn
+ endoffile
+endofprocedure
+
+def PROCESSERROR
+# PRINTS ANY ERRORS TO THE EXCEPTION REPORT
+#
+ IF ERRORTEXT<>"":
+ {
+   EXCEPTIONCOUNT=EXCEPTIONCOUNT+1
+   IF EXCEPTIONCOUNT=1:
+     EXCEPTIONHEADER[]
+   INCOLUMN print001 number
+   INCOLUMN print012 NAME
+   INCOLUMN print034 category
+   INCOLUMN print036 ERRORTEXT
+   print carriagereturn
+ }
+endofprocedure
